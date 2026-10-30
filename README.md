@@ -26,3 +26,11 @@ go run ./cmd
 Тело `PUT /v1/profile`: `{"username":"Alice","bio":"Hello","avatarUrl":null}`. `username` обязателен; `bio` и `avatarUrl` могут быть строкой или `null`. Ответы используют JSON с полями `userId`, `createdAt`, `updatedAt`. Ошибки имеют форму `{"error":{"code":"...","message":"..."}}`.
 
 Хранение настроек приватности пока не реализовано: таблицы для него нет.
+
+## Swagger
+
+Спецификация находится в `docs/swagger.json` и `docs/swagger.yaml`. После изменения комментариев к ручкам пересоздайте её командой:
+
+```sh
+swag init -g main.go -d cmd,internal/handler --parseInternal -o docs
+```

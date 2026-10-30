@@ -12,7 +12,7 @@ import (
 func NewRouter(profiles service.ProfileService, interests service.InterestService) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
-	router.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusOK) })
+	router.GET("/healthz", health)
 
 	api := router.Group("/v1", middleware.UserIDMiddleware())
 	profile := profileHandler{service: profiles}
@@ -24,4 +24,14 @@ func NewRouter(profiles service.ProfileService, interests service.InterestServic
 	api.PUT("/profile/interests/:interestID", interest.add)
 	api.DELETE("/profile/interests/:interestID", interest.remove)
 	return router
+}
+
+// Health godoc
+// @Summary      Проверка доступности сервиса
+// @Description  Возвращает HTTP 200, если процесс принимает запросы.
+// @Tags         health
+// @Success      200  "Сервис доступен"
+// @Router       /healthz [get]
+func health(c *gin.Context) {
+	c.Status(http.StatusOK)
 }

@@ -1,3 +1,10 @@
+// @title       Personal API
+// @version     1.0
+// @description Сервис профилей и интересов проекта «Авантюра». JWT проверяет API Gateway.
+// @BasePath    /
+// @securityDefinitions.apikey XUserID
+// @in          header
+// @name        X-User-ID
 package main
 
 import (

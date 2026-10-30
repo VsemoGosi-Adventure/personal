@@ -11,15 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type errorBody struct {
-	Error struct {
-		Code    string `json:"code"`
-		Message string `json:"message"`
-	} `json:"error"`
+type ErrorDetail struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+type ErrorResponse struct {
+	Error ErrorDetail `json:"error"`
 }
 
 func writeError(c *gin.Context, status int, code, message string) {
-	var body errorBody
+	var body ErrorResponse
 	body.Error.Code = code
 	body.Error.Message = message
 	c.JSON(status, body)

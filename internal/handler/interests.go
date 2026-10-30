@@ -14,13 +14,23 @@ type interestHandler struct {
 	service service.InterestService
 }
 
-type interestResponse struct {
+type InterestResponse struct {
 	ID       int32  `json:"id"`
 	Slug     string `json:"slug"`
 	Name     string `json:"name"`
 	Category string `json:"category"`
 }
 
+// ListInterests godoc
+// @Summary      Список доступных интересов
+// @Description  Возвращает справочник интересов.
+// @Tags         interests
+// @Produce      json
+// @Security     XUserID
+// @Success      200  {array}   InterestResponse
+// @Failure      401  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /v1/interests [get]
 func (h interestHandler) list(c *gin.Context) {
 	items, err := h.service.List(c.Request.Context())
 	if err != nil {
@@ -30,6 +40,16 @@ func (h interestHandler) list(c *gin.Context) {
 	c.JSON(http.StatusOK, interestDTOs(items))
 }
 
+// ListUserInterests godoc
+// @Summary      Список интересов пользователя
+// @Description  Возвращает интересы пользователя из заголовка X-User-ID.
+// @Tags         interests
+// @Produce      json
+// @Security     XUserID
+// @Success      200  {array}   InterestResponse
+// @Failure      401  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /v1/profile/interests [get]
 func (h interestHandler) listForUser(c *gin.Context) {
 	items, err := h.service.ListForUser(c.Request.Context(), middleware.UserID(c))
 	if err != nil {
@@ -39,6 +59,19 @@ func (h interestHandler) listForUser(c *gin.Context) {
 	c.JSON(http.StatusOK, interestDTOs(items))
 }
 
+// AddUserInterest godoc
+// @Summary      Добавление интереса
+// @Description  Добавляет интерес пользователю из заголовка X-User-ID. Повторный запрос безопасен.
+// @Tags         interests
+// @Produce      json
+// @Security     XUserID
+// @Param        interestID  path  int  true  "ID интереса"
+// @Success      204  "Интерес добавлен"
+// @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Failure      404  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /v1/profile/interests/{interestID} [put]
 func (h interestHandler) add(c *gin.Context) {
 	interestID, ok := parseInterestID(c)
 	if !ok {
@@ -51,6 +84,18 @@ func (h interestHandler) add(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// RemoveUserInterest godoc
+// @Summary      Удаление интереса
+// @Description  Удаляет интерес пользователя из заголовка X-User-ID. Повторный запрос безопасен.
+// @Tags         interests
+// @Produce      json
+// @Security     XUserID
+// @Param        interestID  path  int  true  "ID интереса"
+// @Success      204  "Интерес удалён"
+// @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /v1/profile/interests/{interestID} [delete]
 func (h interestHandler) remove(c *gin.Context) {
 	interestID, ok := parseInterestID(c)
 	if !ok {
@@ -72,10 +117,10 @@ func parseInterestID(c *gin.Context) (int32, bool) {
 	return int32(value), true
 }
 
-func interestDTOs(items []domain.Interest) []interestResponse {
-	result := make([]interestResponse, 0, len(items))
+func interestDTOs(items []domain.Interest) []InterestResponse {
+	result := make([]InterestResponse, 0, len(items))
 	for _, item := range items {
-		result = append(result, interestResponse{ID: item.ID, Slug: item.Slug, Name: item.Name, Category: item.Category})
+		result = append(result, InterestResponse{ID: item.ID, Slug: item.Slug, Name: item.Name, Category: item.Category})
 	}
 	return result
 }
