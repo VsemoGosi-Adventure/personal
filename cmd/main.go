@@ -21,6 +21,7 @@ import (
 	"github.com/VsemoGosi-Adventure/personal/internal/config"
 	"github.com/VsemoGosi-Adventure/personal/internal/db"
 	"github.com/VsemoGosi-Adventure/personal/internal/handler"
+	"github.com/VsemoGosi-Adventure/personal/internal/migrate"
 	"github.com/VsemoGosi-Adventure/personal/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -47,6 +48,11 @@ func run(ctx context.Context) error {
 	if err := pool.Ping(ctx); err != nil {
 		return fmt.Errorf("connect to database: %w", err)
 	}
+	count, err := migrate.Up(ctx, pool)
+	if err != nil {
+		return err
+	}
+	log.Printf("database migrations applied: %d", count)
 
 	queries := db.New(pool)
 	server := &http.Server{
