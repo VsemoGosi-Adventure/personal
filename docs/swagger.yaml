@@ -1,0 +1,275 @@
+basePath: /
+definitions:
+  handler.ErrorDetail:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  handler.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/handler.ErrorDetail'
+    type: object
+  handler.InterestResponse:
+    properties:
+      category:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+  handler.ProfileRequest:
+    properties:
+      avatarUrl:
+        type: string
+        x-nullable: true
+      bio:
+        type: string
+        x-nullable: true
+      username:
+        type: string
+    required:
+    - username
+    type: object
+  handler.ProfileResponse:
+    properties:
+      avatarUrl:
+        type: string
+        x-nullable: true
+      bio:
+        type: string
+        x-nullable: true
+      createdAt:
+        format: date-time
+        type: string
+      updatedAt:
+        format: date-time
+        type: string
+      userId:
+        format: uuid
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Сервис профилей и интересов проекта «Авантюра». JWT проверяет API Gateway.
+  title: Personal API
+  version: "1.0"
+paths:
+  /healthz:
+    get:
+      description: Возвращает HTTP 200, если процесс принимает запросы.
+      responses:
+        "200":
+          description: Сервис доступен
+      summary: Проверка доступности сервиса
+      tags:
+      - health
+  /v1/interests:
+    get:
+      description: Возвращает справочник интересов.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.InterestResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - XUserID: []
+      summary: Список доступных интересов
+      tags:
+      - interests
+  /v1/profile:
+    get:
+      description: Возвращает профиль пользователя из заголовка X-User-ID.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - XUserID: []
+      summary: Получение своего профиля
+      tags:
+      - profile
+    put:
+      consumes:
+      - application/json
+      description: Полностью заменяет редактируемые поля профиля пользователя из заголовка
+        X-User-ID.
+      parameters:
+      - description: Поля профиля
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "415":
+          description: Unsupported Media Type
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - XUserID: []
+      summary: Создание или обновление своего профиля
+      tags:
+      - profile
+  /v1/profile/interests:
+    get:
+      description: Возвращает интересы пользователя из заголовка X-User-ID.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.InterestResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - XUserID: []
+      summary: Список интересов пользователя
+      tags:
+      - interests
+  /v1/profile/interests/{interestID}:
+    delete:
+      description: Удаляет интерес пользователя из заголовка X-User-ID. Повторный
+        запрос безопасен.
+      parameters:
+      - description: ID интереса
+        in: path
+        name: interestID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Интерес удалён
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - XUserID: []
+      summary: Удаление интереса
+      tags:
+      - interests
+    put:
+      description: Добавляет интерес пользователю из заголовка X-User-ID. Повторный
+        запрос безопасен.
+      parameters:
+      - description: ID интереса
+        in: path
+        name: interestID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Интерес добавлен
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - XUserID: []
+      summary: Добавление интереса
+      tags:
+      - interests
+securityDefinitions:
+  XUserID:
+    in: header
+    name: X-User-ID
+    type: apiKey
+swagger: "2.0"
