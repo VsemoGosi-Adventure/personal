@@ -12,11 +12,18 @@ import (
 
 type Querier interface {
 	AddUserInterest(ctx context.Context, arg AddUserInterestParams) error
+	CreateCredentials(ctx context.Context, arg CreateCredentialsParams) (CreateCredentialsRow, error)
+	CreateInitialProfile(ctx context.Context, arg CreateInitialProfileParams) error
+	GetCredentialsByEmail(ctx context.Context, email string) (GetCredentialsByEmailRow, error)
+	GetCredentialsByRefreshHash(ctx context.Context, refreshTokenHash pgtype.Text) (GetCredentialsByRefreshHashRow, error)
 	GetInterest(ctx context.Context, id int32) (GetInterestRow, error)
 	GetProfile(ctx context.Context, userID pgtype.UUID) (GetProfileRow, error)
+	InvalidateRefreshToken(ctx context.Context, refreshTokenHash pgtype.Text) (int64, error)
 	ListInterests(ctx context.Context) ([]ListInterestsRow, error)
 	ListUserInterests(ctx context.Context, userID pgtype.UUID) ([]ListUserInterestsRow, error)
 	RemoveUserInterest(ctx context.Context, arg RemoveUserInterestParams) error
+	RotateRefreshToken(ctx context.Context, arg RotateRefreshTokenParams) (RotateRefreshTokenRow, error)
+	UpdateRefreshToken(ctx context.Context, arg UpdateRefreshTokenParams) (int64, error)
 	UpsertProfile(ctx context.Context, arg UpsertProfileParams) (UpsertProfileRow, error)
 }
 

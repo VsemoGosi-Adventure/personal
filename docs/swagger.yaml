@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  domain.AuthTokens:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+    type: object
   handler.ErrorDetail:
     properties:
       code:
@@ -56,9 +65,30 @@ definitions:
       username:
         type: string
     type: object
+  handler.loginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  handler.refreshRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  handler.registerRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact: {}
-  description: Сервис профилей и интересов проекта «Авантюра». JWT проверяет API Gateway.
+  description: Сервис профилей, интересов и аутентификации проекта «Авантюра».
   title: Personal API
   version: "1.0"
 paths:
@@ -71,6 +101,157 @@ paths:
       summary: Проверка доступности сервиса
       tags:
       - health
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Проверяет пароль и возвращает новую пару токенов.
+      parameters:
+      - description: Учетные данные
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.loginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.AuthTokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Вход пользователя
+      tags:
+      - auth
+  /v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Инвалидирует переданный refresh токен.
+      parameters:
+      - description: Refresh токен
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.refreshRequest'
+      responses:
+        "204":
+          description: Сессия завершена
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Выход пользователя
+      tags:
+      - auth
+  /v1/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Однократно заменяет refresh токен и возвращает новую пару.
+      parameters:
+      - description: Refresh токен
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.refreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.AuthTokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Обновление пары токенов
+      tags:
+      - auth
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает учетные данные и базовый профиль, возвращает пару токенов.
+      parameters:
+      - description: Данные регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.registerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.AuthTokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /v1/auth/verify:
+    get:
+      description: Проверяет Bearer JWT и возвращает ID пользователя в заголовке X-User-ID.
+      responses:
+        "200":
+          description: Токен действителен
+          headers:
+            X-User-ID:
+              description: UUID пользователя
+              type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Проверка access токена для Traefik ForwardAuth
+      tags:
+      - auth
   /v1/interests:
     get:
       description: Возвращает справочник интересов.
@@ -268,6 +449,10 @@ paths:
       tags:
       - interests
 securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
   XUserID:
     in: header
     name: X-User-ID

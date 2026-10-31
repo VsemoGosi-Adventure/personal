@@ -8,11 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// NewRouter exposes the profile and interest services over HTTP.
-func NewRouter(profiles service.ProfileService, interests service.InterestService) *gin.Engine {
+// NewRouter exposes authentication, profile and interest services over HTTP.
+func NewRouter(profiles service.ProfileService, interests service.InterestService, auth service.AuthService) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
 	router.GET("/healthz", health)
+	authHandler := authHandler{service: auth}
+	authRoutes := router.Group("/v1/auth")
+	authRoutes.POST("/register", authHandler.register)
+	authRoutes.POST("/login", authHandler.login)
+	authRoutes.POST("/refresh", authHandler.refresh)
+	authRoutes.POST("/logout", authHandler.logout)
+	authRoutes.GET("/verify", authHandler.verify)
 
 	api := router.Group("/v1", middleware.UserIDMiddleware())
 	profile := profileHandler{service: profiles}

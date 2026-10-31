@@ -35,6 +35,12 @@ func writeServiceError(c *gin.Context, err error) {
 		writeError(c, http.StatusNotFound, "not_found", err.Error())
 	case errors.Is(err, domain.ErrUsernameTaken):
 		writeError(c, http.StatusConflict, "username_taken", err.Error())
+	case errors.Is(err, domain.ErrEmailTaken):
+		writeError(c, http.StatusConflict, "email_taken", err.Error())
+	case errors.Is(err, domain.ErrInvalidAuthInput):
+		writeError(c, http.StatusBadRequest, "invalid_request", err.Error())
+	case errors.Is(err, domain.ErrInvalidCredentials), errors.Is(err, domain.ErrInvalidToken), errors.Is(err, domain.ErrAccountBlocked):
+		writeError(c, http.StatusUnauthorized, "unauthorized", "invalid credentials or token")
 	default:
 		log.Printf("HTTP request failed: %v", err)
 		writeError(c, http.StatusInternalServerError, "internal_error", "internal server error")

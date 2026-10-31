@@ -1,10 +1,13 @@
 // @title       Personal API
 // @version     1.0
-// @description Сервис профилей и интересов проекта «Авантюра». JWT проверяет API Gateway.
+// @description Сервис профилей, интересов и аутентификации проекта «Авантюра».
 // @BasePath    /
 // @securityDefinitions.apikey XUserID
 // @in          header
 // @name        X-User-ID
+// @securityDefinitions.apikey BearerAuth
+// @in          header
+// @name        Authorization
 package main
 
 import (
@@ -57,7 +60,7 @@ func run(ctx context.Context) error {
 	queries := db.New(pool)
 	server := &http.Server{
 		Addr:              cfg.HTTPAddress,
-		Handler:           handler.NewRouter(service.NewProfileService(queries), service.NewInterestService(queries)),
+		Handler:           handler.NewRouter(service.NewProfileService(queries), service.NewInterestService(queries), service.NewAuthService(pool, queries, cfg.JWTSecret)),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
