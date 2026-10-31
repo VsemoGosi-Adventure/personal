@@ -10,6 +10,7 @@ import (
 type Config struct {
 	HTTPAddress     string        `env:"HTTP_ADDR" envDefault:":8080"`
 	DatabaseURL     string        `env:"DATABASE_URL,required,notEmpty"`
+	JWTSecret       string        `env:"JWT_SECRET,required,notEmpty"`
 	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" envDefault:"10s"`
 }
 
@@ -20,6 +21,9 @@ func Load() (Config, error) {
 	}
 	if cfg.ShutdownTimeout <= 0 {
 		return Config{}, fmt.Errorf("SHUTDOWN_TIMEOUT must be positive")
+	}
+	if len(cfg.JWTSecret) < 32 {
+		return Config{}, fmt.Errorf("JWT_SECRET must be at least 32 bytes")
 	}
 	return cfg, nil
 }
